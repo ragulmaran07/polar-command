@@ -1,0 +1,23 @@
+﻿services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: polar-command-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - polar_pg_data:/var/lib/postgresql/data
+      - ./database/init/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./database/seed/02_seed_core.sql:/docker-entrypoint-initdb.d/02_seed_core.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  polar_pg_data:
